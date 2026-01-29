@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SPA Router</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const app = document.getElementById("app");
+
+      // Primary route map
+      const routes = {
+        "": "/home.html",
+        "/": "/home.html",
+        dashboard: "/dashboard.html",
+        error: "/error.html",
+        form: "/form.html",
+        home: "/home.html",
+        ch: "https://localhost:5601/",
+      };
+
+      async function loadPage(url, data = {}) {
+        const res = await fetch(url);
+
+        if (!res.ok) return false;
+
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+
+        // Clear current view
+        app.replaceChildren();
+
+        // Remove old page styles
+        document
+          .querySelectorAll("style[data-page-style]")
+          .forEach((s) => s.remove());
+
+        // Remove old page scripts
+        document
+          .querySelectorAll("script[data-old-page-data]")
+          .forEach((s) => s.remove());
+
+        // Move new page styles
+        for (const style of doc.head.querySelectorAll("style")) {
+          const s = document.createElement("style");
+          s.setAttribute("data-page-style", "");
+
+          s.textContent = style.textContent;
+          document.head.appendChild(s);
+        }
+
+        // Move body nodes
+        for (const node of doc.body.childNodes) {
+          app.appendChild(document.importNode(node, true));
+        }
+
+        const old_data = document.createElement("script");
+
+        old_data.setAttribute("oldData", "");
+
+        old_data.textContent = `const oldData = ${JSON.stringify(data)};`;
+
+        document.body.appendChild(old_data);
+
+        app.prepend(old_data);
+
+        // Recreate scripts so they execute
+        for (const oldScript of doc.querySelectorAll("script")) {
+          const s = document.createElement("script");
+          s.setAttribute("data-page-script", "");
+
+          for (const attr of oldScript.attributes) {
+            s.setAttribute(attr.name, attr.value);
+          }
+
+          if (oldScript.textContent) {
+            s.textContent = oldScript.textContent;
+          }
+
+          document.body.appendChild(s);
+        }
+
+        return true;
+      }
+
+      async function router() {
+        const segments = window.location.pathname.split("/").filter(Boolean);
+        const parameter1 = segments[0]?.toLowerCase();
+
+        // ----- NO PATH -----
+        if (!segments.length) {
+          await loadPage(routes[""]);
+          return;
+        }
+
+        // ----- PRIMARY TEST -----
+        if (routes[parameter1]) {
+          await loadPage(routes[parameter1]);
+          return;
+        }
+
+        // secondary test
+        try {
+          const ch = await fetch(`${routes.ch}${parameter1}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (!ch.ok) throw new Error();
+
+          const ct = ch.headers.get("content-type") || "";
+          if (!ct.includes("application/json")) throw new Error();
+
+          const data = await ch.json();
+          if (data.status === false) throw new Error();
+
+          await loadPage(routes.form, data);
+          return;
+        } catch {
+          await loadPage(routes.error);
+        }
+      }
+
+      // Back / forward
+      window.addEventListener("popstate", router);
+
+      // Initial load
+      router();
+    </script>
+  </body>
+</html>

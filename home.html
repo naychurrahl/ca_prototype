@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fun Centered Form</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-container {
+        background: rgba(255, 255, 255, 0);
+        padding: 50px 60px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        text-align: center;
+        max-width: 90%;
+        min-width: 300px;
+        animation: float 6s ease-in-out infinite;
+        position: relative;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+
+      .message {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 15px;
+        min-height: 1.2em;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        border: 2px solid #ff6f91;
+        outline: none;
+        transition:
+          border-color 0.3s,
+          box-shadow 0.3s;
+      }
+
+      input[type="text"]:focus {
+        border-color: #ff3cac;
+        box-shadow: 0 0 10px rgba(255, 60, 172, 0.4);
+        animation: shake 0.3s;
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0px);
+        }
+        25% {
+          transform: translateX(-4px);
+        }
+        50% {
+          transform: translateX(4px);
+        }
+        75% {
+          transform: translateX(-4px);
+        }
+        100% {
+          transform: translateX(0px);
+        }
+      }
+
+      button {
+        margin-left: 40px;
+        margin-right: 40px;
+        margin-top: 20px;
+        padding: 12px 30px;
+        font-size: 1.75rem;
+        border-radius: 12px;
+        border: none;
+        background: #ff6f91;
+        color: white;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        position: relative;
+      }
+
+      button:hover {
+        transform: rotate(-2deg) translateY(-2px);
+        box-shadow: 0 8px 15px rgba(255, 111, 145, 0.4);
+      }
+
+      button:active {
+        transform: rotate(1deg) translateY(1px);
+        box-shadow: none;
+      }
+    </style>
+  </head>
+  <body>
+    <form class="form-container">
+      <div class="message" id="funMessage">
+        Don't be silly! You have an account
+      </div>
+      <button type="submit" id="logIn">Login</button>
+    </form>
+
+    <script>
+      // Base API URL
+      const API_BASE = "https://localhost:5601";
+
+      // API request
+      async function apiRequest(
+        endpoint = "",
+        method = "GET",
+        data = null,
+        useCookies = true,
+      ) {
+        const headers = { "Content-Type": "application/json" };
+
+        const options = {
+          method,
+          headers,
+          body: data ? JSON.stringify(data) : null,
+          // If useCookies is true, send HttpOnly cookies automatically
+          credentials: useCookies ? "include" : "same-origin",
+        };
+
+        try {
+          const response = await fetch(`${API_BASE}/${endpoint}`, options);
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("API request failed:", error);
+          return null;
+        }
+      }
+
+      async function loadThis() {
+        try {
+          
+          button.disabled = true;
+
+          const data = await apiRequest("ping");
+
+          const link = data?.status ?? null;
+
+          if (!link) {
+            throw new Error(`Not logged in`);
+          }
+
+          window.location.href = "https://localhost:5500/dashboard";
+        } catch (error) {
+          
+          button.disabled = false;
+          console.log(error);
+        }
+      }
+      // Motivational / funny messages above input
+      const messages = [
+        "You got this!",
+        "Don't forget to smile 😄",
+        "Seriously, your ideas matter!",
+        "Type like nobody's watching…",
+        "Magic happens when you submit!",
+      ];
+
+      // Chatty hover button
+      const button = document.getElementById("logIn");
+      const buttonMessages = [
+        "Go for it!",
+        "Click me, don't be shy!",
+        "Are you sure? 😏",
+        "Make it happen!",
+        "Do it now!",
+      ];
+
+      var clicked = false;
+
+      button.addEventListener("mouseenter", () => {
+        if (clicked) return;
+        const randomText =
+          buttonMessages[Math.floor(Math.random() * buttonMessages.length)];
+
+        button.textContent = randomText;
+      });
+
+      button.addEventListener("mouseleave", () => {
+        if (clicked) return;
+        button.textContent = "Login";
+      });
+
+      document
+        .querySelector("form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          button.disabled = true;
+          clicked = true;
+          button.textContent = "Logging in...";
+
+          //alert("Silly you! You already have an account!");
+          try {
+            const data = await apiRequest();
+
+            const link = data?.link ?? null;
+
+            if (!link) {
+              throw new Error(`API error: missing link`);
+            }
+
+            window.location.href = link;
+          } catch (error) {
+            alert("Yikes! Something went wrong.");
+          } finally {
+            button.disabled = false;
+            clicked = false;
+            button.textContent = "Login";
+            return;
+          }
+        });
+
+      loadThis();
+    </script>
+  </body>
+</html>
