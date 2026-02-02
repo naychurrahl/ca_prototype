@@ -357,13 +357,15 @@
       async function loadThis () {
         const data = await apiRequest("dashboard", "GET", null, true);
 
-        //console.log("Ping data:", data);
+        console.log({"Ping data": data});
+        //return;
         if (!data) {
           showError("Yikes! Something went wrong.");
           location.replace('./');
         }
 
         console.log(data);
+       // return;
 
         renderUser({
           name: data.name ?? "John Doe",
@@ -380,9 +382,12 @@
         document
           .getElementById("logoutBtn")
           .addEventListener("click", async () => {
-            alert("Logged out!");
-
+            
             const data = await apiRequest("logout", "GET", null, true);
+
+            console.log({"Logout data": data});
+            
+            alert("Logged out!");
           });
 
         const editModal = document.getElementById("editModal"),
@@ -400,10 +405,12 @@
           setTimeout(() => editModal.classList.add("show"), 10);
           modalInput.focus();
         }
+
         function closeEditModal() {
           editModal.classList.remove("show");
           setTimeout(() => (editModal.style.display = "none"), 300);
         }
+
         modalOverlay.addEventListener("click", closeEditModal);
 
         modalSaveBtn.addEventListener("click", async () => {
@@ -482,6 +489,7 @@
         e.textContent = msg;
         e.style.display = "block";
       }
+
       function hideLoading() {
         document.getElementById("loading").style.display = "none";
       }

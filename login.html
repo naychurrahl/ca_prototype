@@ -165,6 +165,7 @@
             throw new Error(`Not logged in`);
           }
 
+          console.log();
           window.location.href = "https://localhost:5500/dashboard";
         } catch (error) {
           
@@ -172,6 +173,7 @@
           console.log(error);
         }
       }
+
       // Motivational / funny messages above input
       const messages = [
         "You got this!",
@@ -218,17 +220,18 @@
           try {
             const data = await apiRequest();
 
-            const link = data?.link ?? null;
+            const linq = data?.linq ?? null;
 
-            if (!link) {
+            if (!linq) {
+              console.log({data: data});
               throw new Error(`API error: missing link`);
             }
 
-            window.location.href = link;
+            window.location.href = linq;
           } catch (error) {
-            alert("Yikes! Something went wrong.");
-          } finally {
             button.disabled = false;
+            console.error(error.message ?? "Yikes! Something went wrong.");
+          } finally {
             clicked = false;
             button.textContent = "Login";
             return;
