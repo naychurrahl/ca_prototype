@@ -357,7 +357,7 @@
       async function loadThis () {
         const data = await apiRequest("dashboard", "GET", null, true);
 
-        console.log({"Ping data": data});
+        //console.log({"Ping data": data});
         //return;
         if (!data) {
           showError("Yikes! Something went wrong.");
@@ -386,8 +386,14 @@
             const data = await apiRequest("logout", "GET", null, true);
 
             console.log({"Logout data": data});
+            if (data !== true){
+              
+              alert("Error occured!!");
+              return;
+            }
+
+            window.location.assign("./");
             
-            alert("Logged out!");
           });
 
         const editModal = document.getElementById("editModal"),
