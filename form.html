@@ -365,9 +365,14 @@
     </div>
 
     <script>
-      if (typeof oldData === "undefined" || ! oldData?.length) location.replace("/error");
+      //console.log({oldData: oldData});
+      if (
+        typeof oldData === "undefined" ||
+        !Object.keys(oldData).length ||
+        oldData?.status !== true
+      )
+        location.replace("/error");
 
-      //console.log(oldData ?? "no data");
       function getPathSegment(index, defaultValue = null) {
         // Get the path and split into segments
         var segments = window.location.pathname
@@ -377,7 +382,7 @@
         // Return the requested segment or defaultValue
         return segments[index] || defaultValue;
       }
-      
+
       // Base API URL
       const API_BASE = "https://localhost:5601";
       //const API_BASE = "https://testautomation.alwaysdata.net";
@@ -511,14 +516,14 @@
 
             console.log(payload);
 
-            //const data = await apiRequest("/", "POST", payload);
-            const data = await new Promise((resolve) => {
+            const data = await apiRequest(getPathSegment(0), "POST", payload);
+            /* const data = await new Promise((resolve) => {
               setTimeout(() => {
                 resolve(Math.random() > 0.5 ? "Success" : "Failed");
               }, 9000);
-            });
+            }); */
 
-            //console.log(data);
+            console.log(data);
 
             if (data && data.toLowerCase() == "success") {
               this.reset();
@@ -532,6 +537,8 @@
           })();
         }
       });
+
+      getPathSegment(0);
     </script>
   </body>
 </html>
